@@ -1,0 +1,100 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link href="https://cdn.jsdelivr.net/npm/simple-datatables@latest/dist/style.css" rel="stylesheet" type="text/css">
+        <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" type="text/javascript"></script>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; font-family: Roboto, Arial, Helvetica, sans-serif; }
+            html, body { overflow-x: hidden; overflow-y: auto; }
+            body { margin: 2vw 5vw; }
+            header { display: flex; align-items: baseline; gap: 1rem; }
+            header h1 a { color: #16378d; }
+            nav { display: flex; flex-direction: column; }
+            a { text-decoration: none; color: #0031e6; }
+            a:hover, a:focus { color: #00198b; }
+            h2 { margin: 1rem 0; }
+            button:not(.datatable-sorter):not(.datatable-filter) { cursor: pointer; padding: 0.5em; }
+
+            tbody button { background: #565656; color: white; border: none; border-radius: 4px; padding: .25rem .5rem; margin: 0 0 0 .25rem; }
+            tbody button:hover, tbody button:focus { background: #3b3b3b; }
+
+            .datatable-input {width: 400px}
+
+            .tr-data:nth-child(odd) { background-color: #f8f8f8 }
+            .tr-data:nth-child(even) { background-color: #f0f0f0 }
+        </style>
+        <script>
+            function customSearch(terms, cell, row, column, source) {{
+                //console.log('terms',terms)
+                // console.log('cell',cell)
+                // console.log('row',row)
+                //console.log('column',column)
+                // console.log('source',source)
+                const remark = row.cells[4].text.toLowerCase()
+                //console.log(remark)
+
+                const includeTerms = terms.filter(t => !t.startsWith('-'))
+//                                          .map(t => t.toLowerCase())
+
+                //console.log('includeterms',includeTerms)
+                const foundIncludes = includeTerms.length == 0 || includeTerms.some(term => remark.includes(term))
+                //console.log('foundincludes',foundIncludes)
+                if (foundIncludes) {
+                    const excludeTerms = terms.filter(t => t.length > 1 && t.startsWith('-'))
+                                              .map(t => t.substring(1))//.toLowerCase()
+
+                    const doesExclude = excludeTerms.some(term => remark.includes(term))
+
+                    if (doesExclude)
+                        return false
+                }
+
+                return foundIncludes
+                //return !terms.some(term => row.cells[4].text.toLowerCase().includes(term.toLowerCase()))
+            }}
+        </script>
+    </head>
+    <body>
+        <!-- <button id="nappi">Söörts</button> -->
+        <table id="bybit">
+            <thead>
+                <tr>
+                    <th>nickname</th>
+                    <th>online</th>
+                    <th>price</th>
+                    <th>limits</th>
+                    <th>remark</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--%TABLE_BODY%-->
+            </tbody>
+        </table>
+        <script type="module">
+            const dataTable = new simpleDatatables.DataTable("#bybit", {
+                searchMethod: customSearch,
+                paging: false,
+                searchQuerySeparator: ";",
+                sensitivity: 'accent'
+            })
+
+            dataTable.on('datatable.init', () =>{
+                const searchElement = document.getElementsByName('search')[0]
+
+                searchElement.value = localStorage.getItem('searchTerm')
+
+                searchElement.dispatchEvent(new Event('input', { 'bubbles': true }));
+
+                searchElement.addEventListener("input", (event) => {
+                    localStorage['searchTerm'] = event.target.value;
+                    console.log('localStorage value set:',event.target.value)
+                });
+
+                // document.getElementById('nappi').addEventListener('click', (event) => {
+                //     dataTable.search('уй')
+                // })
+            })
+
+        </script>
+    </body>
+</html>
